@@ -6,7 +6,9 @@ import { mix, mixColor } from 'react-native-redash';
 import type { AccordionIconProps } from './types';
 
 const Chevron = ({
+  sizeIcon,
   progress,
+  colorIcon,
   handleIcon,
   styleChevron,
   isBackgroundChevron,
@@ -26,11 +28,11 @@ const Chevron = ({
     () =>
       isBackgroundChevron ? (
         <Svg
-          width={24}
-          height={24}
+          width={sizeIcon}
+          height={sizeIcon}
           viewBox="0 0 24 24"
           fill="none"
-          stroke="white"
+          stroke={colorIcon}
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -40,7 +42,7 @@ const Chevron = ({
       ) : (
         <Path d="M6 9l6 6 6-6" />
       ),
-    [isBackgroundChevron]
+    [colorIcon, isBackgroundChevron]
   );
 
   const renderIcon = useCallback(() => {
@@ -48,7 +50,7 @@ const Chevron = ({
       return null;
     }
 
-    return handleIcon === undefined ? hasIcon : null;
+    return handleIcon === undefined ? hasIcon : handleIcon();
   }, [handleIcon, hasIcon]);
 
   return (
