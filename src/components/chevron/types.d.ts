@@ -1,13 +1,29 @@
 import Animated from 'react-native-reanimated';
-import React from 'react';
-export interface chevron {}
-
+import {FC} from 'react';
+import {StyleProp, ViewStyle} from 'react-native';
 export interface AccordionIconProps {
   progress: Animated.SharedValue<number>;
-  handleIcon: React.FC<chevron> | null | undefined;
-  handleHead?: React.FC<chevron> | null;
+  sizeIcon?: number;
+
+  /**
+   *  background for icon arrow
+   */
   isBackgroundChevron: boolean;
-  inactiveBackgroundIcon: string;
+
+  /**
+   * Component icon.
+   */
+  handleIcon?: () => FC | null;
+
+  /**
+   * color active background arrow
+   */
   activeBackgroundIcon: string;
-  styleChevron: any;
+  /**
+   * color inactive background arrow
+   */
+  inactiveBackgroundIcon: string;
+
+  styleChevron?: StyleProp<ViewStyle>;
+  colorIcon?: string;
 }
