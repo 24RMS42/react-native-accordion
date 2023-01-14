@@ -42,7 +42,7 @@ const Chevron = ({
       ) : (
         <Path d="M6 9l6 6 6-6" />
       ),
-    [colorIcon, isBackgroundChevron]
+    [colorIcon, isBackgroundChevron, sizeIcon]
   );
 
   const renderIcon = useCallback(() => {
@@ -50,8 +50,8 @@ const Chevron = ({
       return null;
     }
 
-    return handleIcon === undefined ? hasIcon : handleIcon();
-  }, [handleIcon, hasIcon]);
+    return handleIcon === undefined ? hasIcon : handleIcon(progress);
+  }, [handleIcon, hasIcon, progress]);
 
   return (
     <Animated.View style={[styles.container, style, styleChevron]}>

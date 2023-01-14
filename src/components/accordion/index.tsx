@@ -7,38 +7,57 @@ import Animated, {
   withTiming,
   runOnUI,
 } from 'react-native-reanimated';
-import type { LayoutChangeEvent } from 'react-native';
 import { Chevron } from '../chevron';
 import type { AccordionProps } from './types';
 import { styles } from './styles';
+import { useLayout } from '../../hooks';
 
-const CollapsedView = ({
+const AnimatedAccordion = ({
+  isArrow = true,
   sizeIcon = 16,
+  disabled = false,
+  colorIcon = '#16182b',
   initExpand = false,
   handleIcon,
   styleChevron,
+  contentHeight,
   renderContent,
+  otherProperty,
   onChangeState,
   styleTouchable,
+  configExpanded,
   styleContainer,
-  isUnmountedContent = false,
+  configCollapsed,
+  isPointerEvents = false,
   isBackgroundChevron = true,
+  isUnmountOnCollapse = false,
   activeBackgroundIcon = '#e5f6ff',
-  inactiveBackgroundIcon = '#fff0e4',
-  colorIcon = '#16182b',
+  onAnimatedEndExpanded,
   handleCustomTouchable,
   handleContentTouchable,
-  handleCustomTouchableHeight,
-}: // configOpened,
-// configClosed,
-AccordionProps) => {
-  const [dimensions, setDimensions] = useState(
-    handleCustomTouchableHeight ?? 0
+  onAnimatedEndCollapsed,
+  inactiveBackgroundIcon = '#fff0e4',
+}: AccordionProps) => {
+  const [layout, onLayout] = useLayout(contentHeight);
+  const [isUnmounted, setUnmounted] = useState(initExpand);
+
+  const open = useSharedValue(false);
+  /**
+   * FIXME add spring
+   */
+  const progress = useDerivedValue(() =>
+    open.value
+      ? withTiming(1, configExpanded, onAnimatedEndExpanded)
+      : withTiming(0, configCollapsed, handleExpandedCallback)
   );
 
-  const open = useSharedValue(initExpand);
-  const progress = useDerivedValue(() =>
-    open.value ? withTiming(1) : withTiming(0)
+  const handleExpandedCallback = useCallback(
+    (isFinished) => {
+      if (isUnmountOnCollapse && !open.value && isFinished) setUnmounted(true);
+
+      onAnimatedEndCollapsed(isFinished);
+    },
+    [isUnmountOnCollapse, onAnimatedEndCollapsed, open.value]
   );
 
   const size = useSharedValue(0);
@@ -52,23 +71,12 @@ AccordionProps) => {
     if (size.value === 0) {
       runOnUI(() => {
         'worklet';
-        size.value = dimensions;
+        size.value = layout?.height;
       })();
     }
     open.value = !open.value;
     onChangeState && onChangeState(!open.value);
-  }, [dimensions, onChangeState, open, size]);
-
-  const handleLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      const measuredHeight: number = event.nativeEvent.layout.height;
-
-      if (dimensions !== measuredHeight) {
-        setDimensions(measuredHeight);
-      }
-    },
-    [dimensions]
-  );
+  }, [layout?.height, onChangeState, open, size]);
 
   const renderHeader = useCallback(() => {
     return handleCustomTouchable ? (
@@ -76,47 +84,56 @@ AccordionProps) => {
     ) : (
       <Animated.View style={[styles.header, styleTouchable]}>
         {handleContentTouchable ? handleContentTouchable() : null}
-        <Chevron
-          sizeIcon={sizeIcon}
-          progress={progress}
-          colorIcon={colorIcon}
-          handleIcon={handleIcon}
-          styleChevron={styleChevron}
-          isBackgroundChevron={isBackgroundChevron}
-          activeBackgroundIcon={activeBackgroundIcon}
-          inactiveBackgroundIcon={inactiveBackgroundIcon}
-        />
+        {isArrow ? (
+          <Chevron
+            sizeIcon={sizeIcon}
+            progress={progress}
+            colorIcon={colorIcon}
+            handleIcon={handleIcon}
+            styleChevron={styleChevron}
+            isBackgroundChevron={isBackgroundChevron}
+            activeBackgroundIcon={activeBackgroundIcon}
+            inactiveBackgroundIcon={inactiveBackgroundIcon}
+          />
+        ) : null}
       </Animated.View>
     );
   }, [
-    activeBackgroundIcon,
-    colorIcon,
-    handleContentTouchable,
-    handleCustomTouchable,
-    handleIcon,
-    inactiveBackgroundIcon,
-    isBackgroundChevron,
+    isArrow,
     progress,
     sizeIcon,
+    colorIcon,
+    handleIcon,
     styleChevron,
     styleTouchable,
+    isBackgroundChevron,
+    activeBackgroundIcon,
+    handleCustomTouchable,
+    handleContentTouchable,
+    inactiveBackgroundIcon,
   ]);
 
+  const pointerEvents = !isPointerEvents && open.value ? 'none' : 'auto';
   return (
     <>
-      <TouchableWithoutFeedback onPress={handleCollapsed}>
+      <TouchableWithoutFeedback
+        onPress={handleCollapsed}
+        disabled={disabled}
+        {...otherProperty}
+      >
         {renderHeader()}
       </TouchableWithoutFeedback>
-      <Animated.View style={[styles.content, style]}>
-        <View
-          onLayout={handleLayout}
-          style={[styles.container, styleContainer]}
-        >
-          {isUnmountedContent ? null : renderContent ? renderContent() : null}
+
+      <Animated.View
+        style={[styles.content, style]}
+        pointerEvents={pointerEvents}
+      >
+        <View onLayout={onLayout} style={[styles.container, styleContainer]}>
+          {isUnmounted ? null : renderContent ? renderContent() : null}
         </View>
       </Animated.View>
     </>
   );
 };
 
-export { CollapsedView };
+export { AnimatedAccordion };
