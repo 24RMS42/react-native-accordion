@@ -93,12 +93,6 @@ Checkout the example [here](https://github.com/timelessco/react-native-reanimate
 
 Pull requests are always welcome! Feel free to open a new GitHub issue for any changes that can be made.
 
-## Support
-
-Reach out to me at one of the following places!
-
-- Medium at <a href="https://medium.com/@garganurag893" target="_blank">https://medium.com/@garganurag893 </a>
-
 
 ## License
 

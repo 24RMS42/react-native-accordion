@@ -11,10 +11,10 @@ import Animated, {
   withTiming,
   runOnUI,
 } from 'react-native-reanimated';
-import { Chevron } from '../chevron';
-import type { AccordionProps } from './types';
-import { styles } from './styles';
-import { useLayout } from '../../hooks';
+import { Chevron } from './components/chevron';
+import type { AnimatedAccordionProps } from './components/accordion/types';
+import { styles } from './components/accordion/styles';
+import { useLayout } from './hooks';
 
 const AnimatedAccordion = ({
   isArrow = true,
@@ -42,10 +42,10 @@ const AnimatedAccordion = ({
   handleContentTouchable,
   onAnimatedEndCollapsed,
   inactiveBackgroundIcon = '#fff0e4',
-}: AccordionProps) => {
+}: AnimatedAccordionProps) => {
   const [layout, onLayout] = useLayout(contentHeight);
   const [isUnmounted, setUnmounted] = useState(initExpand);
-
+  //
   const open = useSharedValue(false);
   /**
    * FIXME add spring
@@ -57,8 +57,10 @@ const AnimatedAccordion = ({
   );
 
   const handleExpandedCallback = useCallback(
-    isFinished => {
-      if (isUnmountOnCollapse && !open.value && isFinished) setUnmounted(true);
+    (isFinished: boolean) => {
+      if (isUnmountOnCollapse && !open.value && isFinished) {
+        setUnmounted(true);
+      }
 
       onAnimatedEndCollapsed(isFinished);
     },
@@ -148,15 +150,11 @@ const AnimatedAccordion = ({
         pointerEvents={pointerEvents}
       >
         <View onLayout={onLayout} style={[styles.container, styleContainer]}>
-          {isUnmounted || isStatusFetching
-            ? null
-            : renderContent
-            ? renderContent()
-            : null}
+          {isUnmounted ? null : renderContent ? renderContent() : null}
         </View>
       </Animated.View>
     </>
   );
 };
 
-export { AnimatedAccordion };
+export default AnimatedAccordion;
