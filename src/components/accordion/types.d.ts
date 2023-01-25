@@ -1,5 +1,5 @@
-import {FC} from 'react';
-import {ViewStyle, ViewProps} from 'react-native';
+import { FC } from 'react';
+import { ViewStyle, ViewProps } from 'react-native';
 import type Animated from 'react-native-reanimated';
 
 export interface AnimatedAccordionProps {
@@ -23,7 +23,7 @@ export interface AnimatedAccordionProps {
    * if `renderContent` is provided, the library internally will calculate its layout,
    * unless `contentHeight` is provided.
    */
-  contentHeight?: number;
+  contentHeight: number;
 
   /**
    *
@@ -44,14 +44,6 @@ export interface AnimatedAccordionProps {
    *
    */
   renderContent?: () => FC | null;
-  /**
-   * callback
-   */
-  onAnimatedEndExpanded: (isFinished: any) => void;
-  /**
-   * callback
-   */
-  onAnimatedEndCollapsed: (isFinished: any) => void;
 
   /**
    * callback change state hide/show content
