@@ -1,4 +1,4 @@
-import React, { useCallback, FC, useMemo, useState, useEffect } from 'react';
+import React, { useCallback, FC, useMemo, useEffect } from 'react';
 import {
   ActivityIndicator,
   TouchableWithoutFeedback,
@@ -10,13 +10,14 @@ import Animated, {
   useDerivedValue,
   withTiming,
   runOnUI,
+  runOnJS,
 } from 'react-native-reanimated';
-import { Chevron } from '../chevron';
-import type { AnimatedAccordionProps } from '../accordion/types';
-import { styles } from '../accordion/styles';
-import { useLayout } from '../../hooks';
+import Chevron from '../chevron';
+import type { IAccordionProps } from './types';
+import { styles } from './styles';
+import { useLayout } from '../hooks';
 
-const AnimatedAccordion: FC<AnimatedAccordionProps> = ({
+const AnimatedAccordion: FC<IAccordionProps> = ({
   isArrow = true,
   sizeIcon = 16,
   disabled = false,
@@ -33,15 +34,15 @@ const AnimatedAccordion: FC<AnimatedAccordionProps> = ({
   styleContainer,
   configCollapsed,
   isStatusFetching = false,
-  isUnmountOnCollapse = false, //FIXME
   activeBackgroundIcon = '#e5f6ff',
   handleCustomTouchable,
-  handleIndicatorFetching,
+  onAnimatedEndExpanded,
+  onAnimatedEndCollapsed,
   handleContentTouchable,
   inactiveBackgroundIcon = '#fff0e4',
+  handleIndicatorFetching,
 }) => {
   const [layout, onLayout] = useLayout(0);
-  const [isUnmounted, setUnmounted] = useState(isUnmountOnCollapse);
 
   const open = useSharedValue(initExpand);
   const size = useSharedValue(contentHeight);
@@ -66,11 +67,13 @@ const AnimatedAccordion: FC<AnimatedAccordionProps> = ({
 
   const progress = useDerivedValue(() =>
     open.value
-      ? withTiming(1, configExpanded)
+      ? withTiming(1, configExpanded, () => {
+          'worklet';
+          runOnJS(onAnimatedEndExpanded)();
+        })
       : withTiming(0, configCollapsed, () => {
-          if (isUnmounted) {
-            setUnmounted(true);
-          }
+          'worklet';
+          runOnJS(onAnimatedEndCollapsed)();
         })
   );
 
@@ -155,11 +158,11 @@ const AnimatedAccordion: FC<AnimatedAccordionProps> = ({
 
       <Animated.View style={[styles.content, style]}>
         <View onLayout={onLayout} style={[styles.container, styleContainer]}>
-          {isUnmounted ? null : renderContent ? renderContent() : null}
+          {renderContent ? renderContent() : null}
         </View>
       </Animated.View>
     </>
   );
 };
 
-export { AnimatedAccordion };
+export default AnimatedAccordion;
